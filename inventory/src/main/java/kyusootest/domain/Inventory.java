@@ -44,15 +44,18 @@ public class Inventory {
         repository()
             .findById(orderPlaced.getId())
             .ifPresent(inventory -> {
-                if (
-                    orderPlaced.getQty() != null &&
-                    inventory.stock >= orderPlaced.getQty()
-                ) {
-                    inventory.stock -= orderPlaced.getQty();
-                    inventory.setProductCode(ProductCode.P2); // ProductCode 변경
-                    repository().save(inventory);
-                } else {
-                    throw new RuntimeException("Insufficient stock");
+                try {
+                    int qty = Integer.parseInt(orderPlaced.getQty());
+
+                    if (inventory.stock >= qty) {
+                        inventory.stock -= qty;
+                        inventory.setProductCode(ProductCode.P2);
+                        repository().save(inventory);
+                    } else {
+                        throw new RuntimeException("Insufficient stock");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Invalid quantity format");
                 }
             });
     }
