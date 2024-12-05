@@ -44,8 +44,12 @@ public class Inventory {
         repository()
             .findById(orderPlaced.getId())
             .ifPresent(inventory -> {
-                if (inventory.stock >= orderPlaced.getQty()) {
+                if (
+                    orderPlaced.getQty() != null &&
+                    inventory.stock >= orderPlaced.getQty()
+                ) {
                     inventory.stock -= orderPlaced.getQty();
+                    inventory.setProductCode(ProductCode.P2); // ProductCode 변경
                     repository().save(inventory);
                 } else {
                     throw new RuntimeException("Insufficient stock");
