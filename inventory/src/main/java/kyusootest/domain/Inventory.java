@@ -56,4 +56,12 @@ public class Inventory {
                 }
             });
     }
+
+    public static void prepareForTest() {
+        Inventory inventory = new Inventory();
+        inventory.setProductCode(ProductCode.P1);
+        inventory.setStock(100);
+        inventory.setProductName("TestProduct");
+        repository().save(inventory);
+    }
 }
