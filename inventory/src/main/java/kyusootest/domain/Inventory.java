@@ -11,7 +11,6 @@ import lombok.Data;
 @Entity
 @Table(name = "Inventory_table")
 @Data
-//<<< DDD / Aggregate Root
 public class Inventory {
 
     @Id
@@ -41,29 +40,16 @@ public class Inventory {
         return inventoryRepository;
     }
 
-    //<<< Clean Arch / Port Method
     public static void decreaseStock(OrderPlaced orderPlaced) {
-        //implement business logic here:
-
-        /** Example 1:  new item 
-        Inventory inventory = new Inventory();
-        repository().save(inventory);
-
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(orderPlaced.get???()).ifPresent(inventory->{
-            
-            inventory // do something
-            repository().save(inventory);
-
-
-         });
-        */
-
+        repository()
+            .findById(orderPlaced.getId())
+            .ifPresent(inventory -> {
+                if (inventory.stock >= orderPlaced.getQty()) {
+                    inventory.stock -= orderPlaced.getQty();
+                    repository().save(inventory);
+                } else {
+                    throw new RuntimeException("Insufficient stock");
+                }
+            });
     }
-    //>>> Clean Arch / Port Method
-
 }
-//>>> DDD / Aggregate Root

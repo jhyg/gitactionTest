@@ -1,0 +1,34 @@
+name: test
+run-name: testing 
+on: [push]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Prepare Test Environment
+      run: |
+        cd inventory
+        mkdir -p ignore_test_file
+        mv src/test/java/gitactionTest/*.java ignore_test_file/ || true
+        mv ignore_test_file/DecreaseStockTest.java src/test/java/gitactionTest/ || true
+    - name: Compile and Run Specific Test
+      run: |
+        cd inventory
+        mvn test-compile
+        mvn test -Dtest=gitactionTest.DecreaseStockTest -Dsurefire.useFile=false
+    - name: Restore Test Files
+      if: always()
+      run: |
+        cd inventory
+        if [ -d "ignore_test_file" ] && [ "$(ls -A ignore_test_file)" ]; then
+          mv ignore_test_file/*.java src/test/java/gitactionTest/
+        fi
+        rm -rf ignore_test_file
+    - name: Print Test Results
+      if: always()
+      run: |
+        cd inventory
+        cat target/surefire-reports/*.txt || true
