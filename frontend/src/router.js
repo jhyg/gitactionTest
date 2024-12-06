@@ -11,6 +11,8 @@ import OrderOrderDetail from "./components/listers/OrderOrderDetail"
 import InventoryInventoryManager from "./components/listers/InventoryInventoryCards"
 import InventoryInventoryDetail from "./components/listers/InventoryInventoryDetail"
 
+import GetStockView from "./components/GetStockView"
+import GetStockViewDetail from "./components/GetStockViewDetail"
 
 export default new Router({
     // mode: 'history',
@@ -38,6 +40,16 @@ export default new Router({
                 component: InventoryInventoryDetail
             },
 
+            {
+                path: '/inventories/getStocks',
+                name: 'GetStockView',
+                component: GetStockView
+            },
+            {
+                path: '/inventories/getStocks/:id',
+                name: 'GetStockViewDetail',
+                component: GetStockViewDetail
+            },
 
 
     ]

@@ -1,17 +1,24 @@
-
 package kyusootest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kyusootest.domain.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.verifier.messaging.MessageVerifier;
+import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
+import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierMessage;
+import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierMessaging;
+import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierObjectMapper;
 import org.springframework.cloud.stream.messaging.Processor;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
 import org.springframework.context.ApplicationContext;
@@ -21,88 +28,84 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeTypeUtils;
 
-import org.springframework.cloud.contract.verifier.messaging.MessageVerifier;
-import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
-import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierMessage;
-import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierMessaging;
-import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierObjectMapper;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import kyusootest.domain.*;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DecreaseStockTest {
 
-   private static final Logger LOGGER = LoggerFactory.getLogger(DecreaseStockTest.class);
-   
-   @Autowired
-   private MessageCollector messageCollector;
-   @Autowired
-   private ApplicationContext applicationContext;
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        DecreaseStockTest.class
+    );
 
-   @Autowired
-   private MessageVerifier<Message<?>> messageVerifier;
+    @Autowired
+    private MessageCollector messageCollector;
 
-   @Autowired
-   public InventoryRepository repository;
+    @Autowired
+    private ApplicationContext applicationContext;
 
-   @Test
-   @SuppressWarnings("unchecked")
-   public void test0() {
+    @Autowired
+    private MessageVerifier<Message<?>> messageVerifier;
 
-      //given:
-   Inventory entity = new Inventory();
+    @Autowired
+    public InventoryRepository repository;
 
-      entity.setId("N/A");
-      entity.setStock("N/A");
-      entity.setProductName("N/A");
-      entity.setProductCode("P1");
-      entity.setMoney(new Object[]{[object Object]});
+    @Test
+    @SuppressWarnings("unchecked")
+    public void test0() {
+        //given:
+        Inventory entity = new Inventory();
 
-      repository.save(entity);
+        entity.setId(1L);
+        entity.setStock(10);
+        entity.setProductName("ProductA");
+        entity.setProductCode(ProductCode.P1);
+        entity.setMoney(new Money(100.0, "USD"));
 
-      //when:  
-      
-      OrderPlaced event = new OrderPlaced();
+        repository.save(entity);
 
-      event.setId("N/A");
-      event.setProductName("N/A");
-      event.setProductId("N/A");
-      event.setQty("N/A");
-   
-   
-   InventoryApplication.applicationContext = applicationContext;
+        //when:
 
-      ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-      try {
-         this.messageVerifier.send(MessageBuilder
-                .withPayload(event)
-                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                .setHeader("type", event.getEventType())
-                .build(), "kyusootest");
+        OrderPlaced event = new OrderPlaced();
 
-         //then:
+        event.setId(entity.getId());
+        event.setProductName(entity.getProductName());
+        event.setProductId(String.valueOf(entity.getId()));
+        event.setQty(5);
 
-         Inventory result = repository.findById(entity.getId()).get();
+        InventoryApplication.applicationContext = applicationContext;
 
-         LOGGER.info("Response received: {}", result);
+        ObjectMapper objectMapper = new ObjectMapper()
+            .configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                false
+            );
+        try {
+            this.messageVerifier.send(
+                    MessageBuilder
+                        .withPayload(event)
+                        .setHeader(
+                            MessageHeaders.CONTENT_TYPE,
+                            MimeTypeUtils.APPLICATION_JSON
+                        )
+                        .setHeader("type", event.getEventType())
+                        .build(),
+                    "kyusootest"
+                );
 
-         assertEquals(result.getId(), "N/A");
-         assertEquals(result.getStock(), "N/A");
-         assertEquals(result.getProductName(), "N/A");
-         assertEquals(result.getProductCode(), "P2");
-         assertEquals(result.getMoney(), "N/A");
+            //then:
 
-      } catch (JsonProcessingException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-         assertTrue(e.getMessage(), false);
-      }
+            Inventory result = repository.findById(entity.getId()).get();
 
-     
-   }
+            LOGGER.info("Response received: {}", result);
 
+            assertEquals(result.getId(), Long.valueOf(1L));
+            assertEquals(result.getStock(), Integer.valueOf(5));
+            assertEquals(result.getProductName(), "ProductA");
+            assertEquals(result.getProductCode(), ProductCode.P2);
+            assertEquals(result.getMoney().getAmount(), Double.valueOf(100.0));
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
+    }
 }

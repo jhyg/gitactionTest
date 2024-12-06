@@ -1,5 +1,3 @@
-
-
 <template>
     <v-app id="inspire">
         <div>
@@ -58,6 +56,16 @@
                     </v-list-item>
 
 
+                    <v-list-item
+                        class="px-2"
+                        key="getStocks"
+                        to="/inventories/getStocks"
+                        @click="changeUrl()"
+                        color="primary"
+                        style="font-weight:700;"
+                    >
+                        GetStock
+                    </v-list-item>
                 </v-list>
             </v-navigation-drawer>
         </div>
@@ -138,16 +146,23 @@ export default {
         aggregate: [
             { 
                 title: 'Order', 
-                description: '', 
+                description: 'Order을 관리하는 화면입니다.', 
                 key: 'orders', 
                 route: '/orders/orders',
                 ImageUrl: '',
             },
             { 
                 title: 'Inventory', 
-                description: '', 
+                description: 'Inventory을 관리하는 화면입니다.', 
                 key: 'inventories', 
                 route: '/inventories/inventories',
+                ImageUrl: '',
+            },
+            { 
+                title: 'GetStock', 
+                description: 'getStock을 관리하는 화면입니다.', 
+                key: 'getStocks', 
+                route: '/inventories/getStocks',
                 ImageUrl: '',
             },
             
