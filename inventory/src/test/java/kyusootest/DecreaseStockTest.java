@@ -78,34 +78,28 @@ public class DecreaseStockTest {
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                 false
             );
-        try {
-            this.messageVerifier.send(
-                    MessageBuilder
-                        .withPayload(event)
-                        .setHeader(
-                            MessageHeaders.CONTENT_TYPE,
-                            MimeTypeUtils.APPLICATION_JSON
-                        )
-                        .setHeader("type", event.getEventType())
-                        .build(),
-                    "kyusootest"
-                );
+        this.messageVerifier.send(
+                MessageBuilder
+                    .withPayload(event)
+                    .setHeader(
+                        MessageHeaders.CONTENT_TYPE,
+                        MimeTypeUtils.APPLICATION_JSON
+                    )
+                    .setHeader("type", event.getEventType())
+                    .build(),
+                "kyusootest"
+            );
 
-            //then:
+        //then:
 
-            Inventory result = repository.findById(entity.getId()).get();
+        Inventory result = repository.findById(entity.getId()).get();
 
-            LOGGER.info("Response received: {}", result);
+        LOGGER.info("Response received: {}", result);
 
-            assertEquals(result.getId(), Long.valueOf(1L));
-            assertEquals(result.getStock(), Integer.valueOf(5));
-            assertEquals(result.getProductName(), "ProductA");
-            assertEquals(result.getProductCode(), ProductCode.P2);
-            assertEquals(result.getMoney().getAmount(), Double.valueOf(100.0));
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
+        assertEquals(result.getId(), Long.valueOf(1L));
+        assertEquals(result.getStock(), Integer.valueOf(5));
+        assertEquals(result.getProductName(), "ProductA");
+        assertEquals(result.getProductCode(), ProductCode.P2);
+        assertEquals(result.getMoney().getAmount(), Double.valueOf(100.0));
     }
 }
