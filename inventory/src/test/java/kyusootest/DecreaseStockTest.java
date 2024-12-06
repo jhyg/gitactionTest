@@ -54,11 +54,11 @@ public class DecreaseStockTest {
         //given:
         Inventory entity = new Inventory();
 
-        entity.setId(1L); // 적절한 Long 타입 ID 설정
-        entity.setStock(10); // 적절한 stock 설정
-        entity.setProductName("TestProduct");
+        entity.setId(1L); // 수정: 적절한 Long 타입 ID 사용
+        entity.setStock(10); // 수정: 적절한 Integer 타입 사용
+        entity.setProductName("N/A");
         entity.setProductCode(ProductCode.P1);
-        entity.setMoney(new Money(100.0, "USD")); // Money 객체 사용
+        entity.setMoney(new Money(100.0, "USD"));
 
         repository.save(entity);
 
@@ -66,10 +66,10 @@ public class DecreaseStockTest {
 
         OrderPlaced event = new OrderPlaced();
 
-        event.setId(entity.getId()); // 실제 Long 타입 ID 사용
-        event.setProductName(entity.getProductName());
-        event.setProductId(entity.getId().toString()); // ID를 문자열로 변환
-        event.setQty(5); // 적절한 수량 설정
+        event.setId(1L); // 수정: 적절한 Long 타입 ID 사용
+        event.setProductName("N/A");
+        event.setProductId("P1");
+        event.setQty(1); // 수정: 적절한 Integer 타입 사용
 
         InventoryApplication.applicationContext = applicationContext;
 
@@ -97,12 +97,13 @@ public class DecreaseStockTest {
 
             LOGGER.info("Response received: {}", result);
 
-            assertEquals(result.getId(), entity.getId());
-            assertEquals(result.getStock(), Integer.valueOf(5)); // 수량이 감소한 결과 확인
-            assertEquals(result.getProductName(), entity.getProductName());
-            assertEquals(result.getProductCode(), ProductCode.P2); // 변경된 제품 코드 확인
-            assertNotNull(result.getMoney()); // Money 객체가 null이 아님을 확인
+            assertEquals(result.getId(), Long.valueOf(1L)); // 수정: ID 확인
+            assertEquals(result.getStock(), Integer.valueOf(9)); // 수정: Stock 감소 확인
+            assertEquals(result.getProductName(), "N/A");
+            assertEquals(result.getProductCode(), ProductCode.P2);
+            assertEquals(result.getMoney().getAmount(), Double.valueOf(100.0)); // 수정: 금액 확인
         } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }
