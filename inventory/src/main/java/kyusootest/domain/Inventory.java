@@ -45,7 +45,7 @@ public class Inventory {
             .findById(orderPlaced.getId())
             .ifPresent(inventory -> {
                 try {
-                    int qty = Integer.parseInt(orderPlaced.getQty());
+                    Integer qty = orderPlaced.getQty();
 
                     if (inventory.stock >= qty) {
                         inventory.stock -= qty;
@@ -54,8 +54,8 @@ public class Inventory {
                     } else {
                         throw new RuntimeException("Insufficient stock");
                     }
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("Invalid quantity format");
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("Invalid quantity format", e);
                 }
             });
     }

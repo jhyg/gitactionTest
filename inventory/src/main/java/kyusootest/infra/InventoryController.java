@@ -22,7 +22,7 @@ public class InventoryController {
 
     @GetMapping(path = "/inventories/getStock")
     public Inventory getStock(GetStockQuery getStockQuery) {
-        return inventoryRepository.getStock(
+        return inventoryRepository.GetStock(
             getStockQuery.getId(),
             getStockQuery.getStock(),
             getStockQuery.getProductName()
