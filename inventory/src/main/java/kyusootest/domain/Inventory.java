@@ -41,10 +41,10 @@ public class Inventory {
     }
 
     public static void decreaseStock(OrderPlaced orderPlaced) {
-        repository()
-            .findById(orderPlaced.getId())
-            .ifPresent(inventory -> {
-                try {
+        try {
+            repository()
+                .findById(orderPlaced.getId())
+                .ifPresent(inventory -> {
                     Integer qty = orderPlaced.getQty();
 
                     if (inventory.stock >= qty) {
@@ -54,10 +54,10 @@ public class Inventory {
                     } else {
                         throw new RuntimeException("Insufficient stock");
                     }
-                } catch (RuntimeException e) {
-                    throw new RuntimeException("Invalid quantity format", e);
-                }
-            });
+                });
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid quantity format", e);
+        }
     }
 
     public static void prepareForTest() {

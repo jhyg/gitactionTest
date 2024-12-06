@@ -54,11 +54,11 @@ public class DecreaseStockTest {
         //given:
         Inventory entity = new Inventory();
 
-        entity.setId(1L);
-        entity.setStock(10);
-        entity.setProductName("ProductA");
+        entity.setId("1");
+        entity.setStock(100);
+        entity.setProductName("TestProduct");
         entity.setProductCode(ProductCode.P1);
-        entity.setMoney(new Money(100.0, "USD"));
+        entity.setMoney(new Money(10.0, "USD"));
 
         repository.save(entity);
 
@@ -68,8 +68,8 @@ public class DecreaseStockTest {
 
         event.setId(entity.getId());
         event.setProductName(entity.getProductName());
-        event.setProductId(String.valueOf(entity.getId()));
-        event.setQty(5);
+        event.setProductId("P1");
+        event.setQty(10);
 
         InventoryApplication.applicationContext = applicationContext;
 
@@ -78,28 +78,33 @@ public class DecreaseStockTest {
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                 false
             );
-        this.messageVerifier.send(
-                MessageBuilder
-                    .withPayload(event)
-                    .setHeader(
-                        MessageHeaders.CONTENT_TYPE,
-                        MimeTypeUtils.APPLICATION_JSON
-                    )
-                    .setHeader("type", event.getEventType())
-                    .build(),
-                "kyusootest"
-            );
+        try {
+            this.messageVerifier.send(
+                    MessageBuilder
+                        .withPayload(objectMapper.writeValueAsString(event))
+                        .setHeader(
+                            MessageHeaders.CONTENT_TYPE,
+                            MimeTypeUtils.APPLICATION_JSON
+                        )
+                        .setHeader("type", event.getEventType())
+                        .build(),
+                    "kyusootest"
+                );
 
-        //then:
+            //then:
 
-        Inventory result = repository.findById(entity.getId()).get();
+            Inventory result = repository.findById(entity.getId()).get();
 
-        LOGGER.info("Response received: {}", result);
+            LOGGER.info("Response received: {}", result);
 
-        assertEquals(result.getId(), Long.valueOf(1L));
-        assertEquals(result.getStock(), Integer.valueOf(5));
-        assertEquals(result.getProductName(), "ProductA");
-        assertEquals(result.getProductCode(), ProductCode.P2);
-        assertEquals(result.getMoney().getAmount(), Double.valueOf(100.0));
+            assertEquals(result.getId(), entity.getId());
+            assertEquals(result.getStock().intValue(), 90); // 100 - 10
+            assertEquals(result.getProductName(), entity.getProductName());
+            assertEquals(result.getProductCode(), ProductCode.P2);
+            assertEquals(result.getMoney(), entity.getMoney());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            assertTrue(e.getMessage(), false);
+        }
     }
 }
